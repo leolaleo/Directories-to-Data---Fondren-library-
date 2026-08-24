@@ -5,9 +5,9 @@ Fondren Fellows Internship, Fondren Library, Rice University. Summer 2026.
 
 This project converts scanned pages of the 1900–1901 Houston city directory into structured, searchable data. 5,621 entries were extracted from 80 pages and delivered as a self-contained interactive HTML dashboard and a companion Excel workbook.
 
-![Directory Dashboard, Browse view]([Document/dashboard_browse.png](https://github.com/leolaleo/Directories-to-Data---Fondren-library-/blob/main/Document/Dashboard%20-%20Overview.png))
+![Directory Dashboard, Browse view](Document/Dashboard_Browse.png)
 
-![Directory Dashboard, Overview view](Document/dashboard_overview.png)
+![Directory Dashboard, Overview view](Document/Dashboard_Overview.png)
 
 ## Contents
 
