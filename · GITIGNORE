@@ -1,0 +1,27 @@
+# API keys -- NEVER commit these
+api_key.txt
+.env
+*.env
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large regenerable intermediates
+# (remove these lines if you want crops and overlays committed)
+output_ground_truth/crops/
+step5_new_pages_output/entry_crops/
+step5_new_pages_output/overlays/
