@@ -227,7 +227,7 @@ The source scans are not redistributed in this repository. Access to the origina
 
 ## Acknowledgments
 
-Developed as part of the Fondren Fellows Program at Fondren Library, Rice University, under the supervision of Sean Smith, with Norie Guthrie.
+Developed as part of the Fondren Fellows Program at Fondren Library, Rice University, under the supervision of Sean Smith and Norie Guthrie.
 
 Questions about the code or data: Abhirami Kathirvel, ak283@rice.edu
 
