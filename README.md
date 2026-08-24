@@ -37,7 +37,7 @@ This project converts scanned pages of the 1900–1901 Houston city directory in
 
 On accuracy: Step 3 measured 70.3% field-level accuracy against a hand-typed answer key. That figure is a **diagnostic on a single test page (page 200), taken before the Step 5 hardening**, and its purpose was to identify which of the 14 fields needed work. It is not a measure of the final 5,621-entry dataset, which has not been re-scored against ground truth. See Recommendations in the final report.
 
-Full write-up: [`document/Directories_to_Data_Final_Report.pdf`](document/Directories_to_Data_Final_Report.pdf)
+Full write-up: [`Directories to Data - Final Report`](Document/Directories_to_Data%20-%20Final_Report.pdf)
 
 ## Quick start
 
