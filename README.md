@@ -5,7 +5,9 @@ Fondren Fellows Internship, Fondren Library, Rice University. Summer 2026.
 
 This project converts scanned pages of the 1900–1901 Houston city directory into structured, searchable data. 5,621 entries were extracted from 80 pages and delivered as a self-contained interactive HTML dashboard and a companion Excel workbook.
 
-![Directory Dashboard](docs/dashboard_screenshot.png)
+![Directory Dashboard, Browse view](Document/dashboard_browse.png)
+
+![Directory Dashboard, Overview view](Document/dashboard_overview.png)
 
 ## Contents
 
@@ -29,33 +31,34 @@ This project converts scanned pages of the 1900–1901 Houston city directory in
 
 - **80 pages processed end to end.** 75 contained real entries; 5 were correctly recognized as full-page advertisements or dividers containing zero entries.
 - **5,621 structured entries extracted**, each carrying up to 14 fields: name, occupation, employer, address type, racial marker as printed, ownership, and notes.
+- **5,308 people and 269 businesses** identified, with **3,104 entries** linked to at least one other entry by shared address, employer, or surname.
 - **159 entries (2.8%) flagged for manual review**, divided into a fragment signal (113) and a duplicate signal (46). Both thresholds were tested against the full dataset rather than assumed correct.
 - **12 distinct bugs found and fixed**, several of which were silently losing or corrupting real data before they were caught. All are documented in Section 9 of the final report.
 
 On accuracy: Step 3 measured 70.3% field-level accuracy against a hand-typed answer key. That figure is a **diagnostic on a single test page (page 200), taken before the Step 5 hardening**, and its purpose was to identify which of the 14 fields needed work. It is not a measure of the final 5,621-entry dataset, which has not been re-scored against ground truth. See Recommendations in the final report.
 
-Full write-up: [`docs/Directories_to_Data_Final_Report.pdf`](docs/Directories_to_Data_Final_Report.pdf)
+Full write-up: [`document/Directories_to_Data_Final_Report.pdf`](document/Directories_to_Data_Final_Report.pdf)
 
 ## Quick start
 
 If you only want the data, you do not need to run anything:
 
-- **`dashboard_output/Directory_Dashboard.html`** — download and open in any browser.
-- **`dashboard_output/Directory_Dashboard.xlsx`** — open in Excel.
+- **`code/dashboard_output/Directory_Dashboard.html`** — download and open in any browser.
+- **`code/dashboard_output/Directory_Dashboard.xlsx`** — open in Excel.
 
 To rebuild the deliverables from the extracted data, run Step 6 alone. It takes under a minute and needs no API key. To re-extract from source images, see [Setup](#setup) and [Running the pipeline](#running-the-pipeline).
 
 ## Pipeline
 
-Six notebooks, run in order, each reading the previous step's output. Steps 1 through 4 build and validate a parsing recipe against one hand-verified page. Step 5 applies it at full scale. Step 6 converts the result into the end-user products.
+Six notebooks in `code/`, run in order, each reading the previous step's output. Steps 1 through 4 build and validate a parsing recipe against one hand-verified page. Step 5 applies it at full scale. Step 6 converts the result into the end-user products.
 
 | # | Notebook | Purpose | Output |
 |---|----------|---------|--------|
 | 1 | `step1_fix_boxes.ipynb` | Hand-correct OpenCV's first-pass bounding boxes on the test page | `corrected_boxes.json` (79 boxes) |
-| 2 | `step2_type_ground_truth_v3.ipynb` | Hand-type the answer key for every field of every entry | `ground_truth.json` (79 entries, 14 fields) |
+| 2 | `step2_type_ground_truth.ipynb` | Hand-type the answer key for every field of every entry | `ground_truth.json` (79 entries, 14 fields) |
 | 3 | `step3_accuracy_comparison.ipynb` | Score pipeline output against ground truth, field by field | per-field accuracy, `mismatches.csv` |
 | 4 | `step4_correction_loop.ipynb` | Test few-shot correction on five known error patterns | before/after comparison (negative result) |
-| 5 | `step5_process_new_pages_14.ipynb` | Apply the hardened pipeline to all 80 pages | 5,621 entries (CSV, Excel, overlays) |
+| 5 | `step5_process_new_pages.ipynb` | Apply the hardened pipeline to all 80 pages | 5,621 entries (CSV, Excel, overlays) |
 | 6 | `step6_build_dashboard.ipynb` | Compute relationships and quality flags, build deliverables | `Directory_Dashboard.html` and `.xlsx` |
 
 Each notebook is self-documenting, with markdown cells explaining what each section does and why. Where the notebooks and the report disagree, the notebooks are the source of truth.
@@ -65,8 +68,8 @@ Each notebook is self-documenting, with markdown cells explaining what each sect
 Python 3.10 or later is required.
 
 ```bash
-git clone https://github.com/[your-username]/directories-to-data-fondren-library.git
-cd directories-to-data-fondren-library
+git clone https://github.com/leolaleo/Directories-to-Data---Fondren-library-.git
+cd Directories-to-Data---Fondren-library-
 
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
@@ -78,22 +81,18 @@ pip install -r requirements.txt
 
 Steps 3 through 5 call the Google Gemini API, using the `gemini-2.5-flash` model. The notebooks look for a key in two places, in this order:
 
-1. A file named `api_key.txt` in the repository root, containing only the key.
+1. A file named `api_key.txt` in the working directory, containing only the key.
 2. The `GEMINI_API_KEY` environment variable.
 
-Either works. To use the file:
+The notebooks resolve all paths relative to the working directory, so **run Jupyter from inside `code/`** and place `api_key.txt` there:
 
 ```bash
+cd code
 echo "your_key_here" > api_key.txt
-```
-
-`api_key.txt` and `.env` are both gitignored. **Do not commit your key.** A key can be obtained from [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-Then launch Jupyter:
-
-```bash
 jupyter notebook
 ```
+
+`api_key.txt` and `.env` are gitignored. **Do not commit your key.** A key can be obtained from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 Allow roughly 2 GB of disk space if you regenerate entry crops and page overlays.
 
@@ -109,15 +108,14 @@ Allow roughly 2 GB of disk space if you regenerate entry crops and page overlays
 
 ## Deliverables
 
-Both are written to `dashboard_output/` by Step 6.
+Both are written to `code/dashboard_output/` by Step 6.
 
 ### `Directory_Dashboard.html`
 
 A single self-contained file. No server, no install, no internet connection required. GitHub will not render it in the browser, so download the file and open it locally.
 
-- **Overview.** At-a-glance summary of the collection, plus a metric explorer for viewing distributions across entry type, occupation, racial marker as printed, and ownership.
-- **Browse.** Full-text search across all entries, with checkbox multi-select filtering on entry type and racial marker. Filters combine.
-- **Relationships.** Entries linked by shared address, shared employer, and shared surname, so households, workplaces, and family groupings can be followed.
+- **Browse.** Full-text search across name, address, occupation, and employer, with an optional sounds-like match, checkbox multi-select filtering on entry type and marker, sortable columns, and per-page and per-edition filters. Selecting an entry opens a detail panel showing its parsed fields alongside its affiliated business, others at the same address, coworkers at the same employer, and same-surname matches. Results are exportable to CSV.
+- **Overview.** A metric explorer for viewing distributions across occupations, entry type, marker, and ownership, with control over ordering and depth, an optional split by marker, and the option to follow the active Browse filters. Clicking any bar filters Browse to those entries. Chart data is exportable.
 - **Review.** The 159 flagged entries isolated for checking, labeled by which signal fired.
 
 ### `Directory_Dashboard.xlsx`
@@ -131,18 +129,18 @@ Every entry carries up to 14 fields. Blank means the printed entry did not suppl
 | Field | Description | Example |
 |---|---|---|
 | `entry_type` | One of `person`, `business`, `institution`, `cross_reference` | `person` |
-| `last_name` | Surname, printed first in this directory | `Achenbach` |
-| `first_name` | Given name or initials as printed | `Jno` |
-| `business_name` | Firm name, for entries carrying no personal name | `Houston Ice & Brewing Co` |
-| `occupation` | Occupation as printed, abbreviations preserved | `servt` |
-| `employer` | Employer or firm the person works for | `H & TC Ry` |
+| `last_name` | Surname, printed first in this directory | `Abercrombie` |
+| `first_name` | Given name or initials as printed | `Leonard A.` |
+| `business_name` | Firm name, for entries carrying no personal name | `Levy Bros., Dry Goods` |
+| `occupation` | Occupation as printed, abbreviations preserved | `law student` |
+| `employer` | Employer or firm the person works for | `Baker, Botts, Baker & Lovett` |
 | `workplace_address` | Address of the workplace, where given separately | `212 Main` |
-| `residence` | Home address, from `r.` or `h.` notation | `1000 Gray ave` |
+| `residence` | Home address, from `r.` or `h.` notation | `h. 2017 Main.` |
 | `residence_qualifier` | Directional or positional qualifier | `nr`, `cor`, `over`, `es`, `ws`, `bt` |
-| `boarding` | Boarding address, from `bds` notation | `bds 405 Milam` |
-| `rooms` | Rooms address, from `rms` notation | `rms 12 Binz bldg` |
+| `boarding` | Boarding address, from `bds` notation | `bds 2205 Opelousas.` |
+| `rooms` | Rooms address, from `rms` notation | `rms 803 Washington` |
 | `race` | Racial marker exactly as printed | `(c)` |
-| `ownership` | Ownership indicator where printed | `owner` |
+| `ownership` | Ownership indicator where printed | `home` |
 | `notes` | Widow status, cross-references, and other remarks | `wid Jas` |
 
 **Values are recorded exactly as printed.** If the page reads `(c)`, the field holds `(c)`, not "colored." If it reads `servt`, the field holds `servt`, not "Servant." Abbreviations are expanded at the display layer using lookup tables, never in the stored data. This keeps the archival record unaltered and ensures every accuracy comparison measures the same thing on both sides.
@@ -169,21 +167,23 @@ The address notation matters and is easy to conflate. This directory distinguish
 
 ```
 .
-├── step1_fix_boxes.ipynb
-├── step2_type_ground_truth_v3.ipynb
-├── step3_accuracy_comparison.ipynb
-├── step4_correction_loop.ipynb
-├── step5_process_new_pages_14.ipynb
-├── step6_build_dashboard.ipynb
-├── output_box_fixing/          # corrected_boxes.json, overlay image
-├── output_ground_truth/        # ground_truth.json, verified entry crops
-├── output_step3_accuracy/      # per-field accuracy, mismatches
-├── output_step4_correction/    # few-shot before/after results
-├── step5_new_pages_output/     # full-run CSVs, Excel, page stats
-├── dashboard_output/           # Directory_Dashboard.html and .xlsx
-├── docs/
+├── code/
+│   ├── step1_fix_boxes.ipynb
+│   ├── step2_type_ground_truth.ipynb
+│   ├── step3_accuracy_comparison.ipynb
+│   ├── step4_correction_loop.ipynb
+│   ├── step5_process_new_pages.ipynb
+│   ├── step6_build_dashboard.ipynb
+│   ├── output_box_fixing/          # corrected_boxes.json, overlay image
+│   ├── output_ground_truth/        # ground_truth.json, verified entry crops
+│   ├── output_step3_accuracy/      # per-field accuracy, mismatches
+│   ├── output_step4_correction/    # few-shot before/after results
+│   ├── step5_new_pages_output/     # full-run CSVs, Excel, page stats
+│   └── dashboard_output/           # Directory_Dashboard.html and .xlsx
+├── document/
 │   ├── Directories_to_Data_Final_Report.pdf
-│   └── dashboard_screenshot.png
+│   ├── dashboard_browse.png
+│   └── dashboard_overview.png
 ├── requirements.txt
 ├── .gitignore
 ├── LICENSE
@@ -196,12 +196,13 @@ The source material is the 1900–1901 Houston city directory, held by Fondren L
 
 The source scans are not redistributed in this repository. Access to the original page images can be requested from Fondren Library. The derived outputs produced by this pipeline, meaning the structured entry CSVs, the dashboard, and the Excel workbook, are included here.
 
-**A note on historical content.** This directory records people using the conventions of its time, including racial markers printed beside names. These are preserved exactly as printed rather than removed or modernized, because the printed record is the object of study and altering it would misrepresent the source. Users working with this data should treat those markers as historical artifacts of a segregated city directory, not as descriptive categories.
+**A note on historical content.** This directory records people using the conventions of its time, including racial or ethnic identifiers printed beside names. These are preserved exactly as printed rather than removed or modernized, because the printed record is the object of study and altering it would misrepresent the source. Nothing is inferred, standardized, or assigned. These are the 1900 publisher's terms, not descriptions of how any person identified themselves.
 
 ## Limitations
 
 - Accuracy has been formally measured on one page only. The full 5,621-entry dataset has not been scored against ground truth.
 - The 2.8% review flag is a heuristic. It surfaces likely fragments and likely duplicates; it is not a guarantee that unflagged entries are correct.
+- Relationships are computed heuristically from shared field values and are indicative, not authoritative. A shared surname or address is a lead to follow, not a confirmed connection.
 - OCR and parsing are model-based and non-deterministic in principle. Temperature is set to 0 for reproducibility, but model updates on the provider side may change output over time.
 - The pipeline is tuned to this directory's specific layout and notation. Applying it to a different edition or publisher will require revisiting box detection and the parsing prompt.
 - Box detection is not perfect. Merged and split boxes still occur; the quality flags exist precisely because of this.
@@ -210,9 +211,9 @@ The source scans are not redistributed in this repository. Access to the origina
 
 **`ModuleNotFoundError` on the first cell.** The virtual environment is not active, or `pip install -r requirements.txt` has not been run. Check that Jupyter is using the same environment you installed into.
 
-**`AssertionError: API key required`.** No `api_key.txt` was found in the working directory and `GEMINI_API_KEY` is not set. Note that the notebook looks in the *working* directory, which is not always the notebook's folder.
+**`AssertionError: API key required`.** No `api_key.txt` was found in the working directory and `GEMINI_API_KEY` is not set. The notebooks resolve paths relative to the working directory, so confirm you launched Jupyter from inside `code/`.
 
-**`AssertionError: Ground truth not found`.** Steps 3 to 5 expect `output_ground_truth/ground_truth.json`. Confirm it was cloned and that you are running from the repository root.
+**`AssertionError: Ground truth not found`.** Steps 3 to 5 expect `output_ground_truth/ground_truth.json` relative to the working directory. Confirm it was cloned and that you are running from inside `code/`.
 
 **Step 5 stopped partway.** Re-run the notebook. It resumes from the last completed page. Nothing already processed is re-sent or re-billed.
 
@@ -222,7 +223,7 @@ The source scans are not redistributed in this repository. Access to the origina
 
 ## Citing this work
 
-> Kathirvel, Abhirami. *Directories to Data: Houston City Directory Digitization Pipeline.* Fondren Fellows Program, Fondren Library, Rice University, 2026. https://github.com/[your-username]/directories-to-data-fondren-library
+> Kathirvel, Abhirami. *Directories to Data: Houston City Directory Digitization Pipeline.* Fondren Fellows Program, Fondren Library, Rice University, 2026. https://github.com/leolaleo/Directories-to-Data---Fondren-library-
 
 ## Acknowledgments
 
